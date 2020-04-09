@@ -1,7 +1,7 @@
 using GeometricRobotDynID
 
-# All the solvers
-using SCS, ECOS, MosekTools
+# Add the Mosek solver
+using MosekTools
 
 # And additional packages
 using LinearAlgebra
@@ -16,39 +16,32 @@ gr()
 φ₀, A, b, Q = load_data("./data/Train_data_human.mat", Σ = Σ)
 γ = 1e-2 * tr(A'*A)
 
-Atrain, btrain, Atest, btest = split_data(A, b, percentage = 0.5)
+Atrain, btrain, Atest, btest = split_data(A, b, percentage = 0.1)
 
 # Initial error
-rmse(A*φ₀, b)
-rmse(Atrain*φ₀, btrain)
-rmse(Atest*φ₀, btest)
+rmse(A*φ₀, b) # ≈ 8.15
+rmse(Atrain*φ₀, btrain) # ≈ 8.34
+rmse(Atest*φ₀, btest) # ≈ 6.23
 
 # Set the solver
-solver = Mosek.Optimizer # Works also with SCS.Optimizer, but very slow
-solver = SCS.Optimizer
+solver = Mosek.Optimizer # Works also with SCS.Optimizer, but slower
 φ_e = estimate_parameters(Atrain, btrain, φ₀, γ, metric = EuclideanDistance(), solver = solver, Q = Q)
-rmse(A*φ_e, b)
-rmse(Atrain*φ_e, btrain)
-rmse(Atest*φ_e, btest)
+rmse(A*φ_e, b) # ≈ 6.33
+rmse(Atrain*φ_e, btrain) # ≈ 6-48
+rmse(Atest*φ_e, btest) # 4.69
 
 φ_p = estimate_parameters(Atrain, btrain, φ₀, γ, metric = PullbackDistance(), solver = solver, Q = Q)
-rmse(A*φ_p, b)
-rmse(Atrain*φ_p, btrain)
-rmse(Atest*φ_p, btest)
+rmse(A*φ_p, b) # ≈ 6.35
+rmse(Atrain*φ_p, btrain) # ≈ 6.48
+rmse(Atest*φ_p, btest) # ≈ 4.96
 
-
+# I am not 100 % sure this works as it should
 φ_en = estimate_parameters(Atrain, btrain, φ₀, γ, metric = EntropicDistance(), solver = solver, Q = Q)
-rmse(A*φ_en, b)
-rmse(Atrain*φ_en, btrain)
-rmse(Atest*φ_en, btest)
+rmse(A*φ_en, b) # ≈ 6.58
+rmse(Atrain*φ_en, btrain) # ≈ 6.48
+rmse(Atest*φ_en, btest) # ≈ 7.37
 
 scatter(φ₀, label = "Initial")
 scatter!(φ_e, label = "Euclidean")
 scatter!(φ_p, label = "Pullback")
 scatter!(φ_en, label = "Entropic")
-
-# Estimate the torques
-plot(b, xlim = (0, 300))
-plot(A*φ_e-b, xlim = (0, 300))
-plot!(A*φ_p-b, xlim = (0, 300))
-plot!(A*φ_en-b, xlim = (0, 300))
