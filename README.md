@@ -12,4 +12,4 @@ based upon the [associated repository](https://github.com/alex07143/Geometric-Ro
 
 Still under development and testing.
 
-An example how to use this package can be found [here](./src/human_identification.jl).
+An example how to use this package can be found [here](./scripts/human_identification.jl).
