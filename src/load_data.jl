@@ -35,3 +35,5 @@ function split_data(A::AbstractArray{T,2}, b::AbstractArray{T, 2}; percentage::T
     train_idx, test_idx = split_idxs(size(A, 1), percentage)
     return view(A, train_idx, :), view(b, train_idx), view(A, test_idx, :), view(b, test_idx)
 end
+
+function load_robot()
